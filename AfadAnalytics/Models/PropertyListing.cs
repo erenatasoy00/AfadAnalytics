@@ -1,5 +1,4 @@
-﻿using NetTopologySuite.Geometries;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AfadAnalytics.Models
@@ -14,7 +13,7 @@ namespace AfadAnalytics.Models
         [Column("url")]
         public string? Url { get; set; }
 
-        [Column("date")]
+        [Column("listing_date")]
         public string? Date { get; set; }
 
         [Column("listing_type")]
@@ -59,10 +58,10 @@ namespace AfadAnalytics.Models
         [Column("heating_type")]
         public string? HeatingType { get; set; }
 
-        [Column("platform")]
-        public string? Platform { get; set; }
+        // [Column("platform")]
+        // public string? Platform { get; set; }
 
-       // [Column("geom", TypeName = "geometry")]
-        //public Point? Geom { get; set; }
+        // [Column("geom", TypeName = "geometry")]
+        // public Point? Geom { get; set; }
     }
 }

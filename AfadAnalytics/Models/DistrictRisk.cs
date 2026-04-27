@@ -16,7 +16,7 @@ namespace AfadAnalytics.Models
         [Column("risk_category")]
         public string? RiskCategory { get; set; }
 
-        [Column("risk_score")]
+        [Column("composite_risk_score")]
         public string? RiskScore { get; set; }
     }
 }

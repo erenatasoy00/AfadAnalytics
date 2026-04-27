@@ -1,4 +1,5 @@
-@AfadAnalytics_HostAddress = http://localhost:5293
+@AfadAnalytics_HostAddress = http://localhost:3000
+
 
 GET {{AfadAnalytics_HostAddress}}/weatherforecast/
 Accept: application/json
