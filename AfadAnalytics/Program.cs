@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using AfadAnalytics.Data;
+using AfadAnalytics.Services.AnalyticsService;
+using AfadAnalytics.Services.ListingService;
+using AfadAnalytics.Services.MapService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         o => o.UseNetTopologySuite()));
+
+builder.Services.AddScoped<IMapService, MapManager>();
+builder.Services.AddScoped<IListingsService, ListingsManager>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsManager>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

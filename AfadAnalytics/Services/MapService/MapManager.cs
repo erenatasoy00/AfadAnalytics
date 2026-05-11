@@ -1,56 +1,61 @@
 ﻿using System.Globalization;
 using AfadAnalytics.Data;
-using AfadAnalytics.DTOs;
+using AfadAnalytics.DTOs.Map;
 using Microsoft.EntityFrameworkCore;
 
 namespace AfadAnalytics.Services.MapService;
 
-public class MapService
-{
-    public class MapService : IMapService
+public class MapManager : IMapService
     {
         private readonly AppDbContext _context;
 
-        public MapService(AppDbContext context)
+        public MapManager(AppDbContext context)
         {
             _context = context;
         }
 
         public async Task<IEnumerable<DistrictMapDto>> GetDistrictsAsync(string? city)
         {
-            var sql = @"
-                SELECT p.city, p.district, p.latitude, p.longitude,
-                       p.asking_price_try, p.price_per_sqm_try,
-                       r.risk_category, r.composite_risk_score as risk_score
-                FROM property_listings p
-                JOIN district_risks r 
-                    ON unaccent(lower(p.district)) = unaccent(lower(r.district))
-                WHERE p.district IS NOT NULL";
+            var cityFilter = string.IsNullOrWhiteSpace(city) ? "" 
+                : $" AND unaccent(lower(p.city)) = unaccent(lower('{city.Trim()}'))";
 
-            if (!string.IsNullOrWhiteSpace(city))
-                sql += $" AND lower(p.city) = lower('{city.Trim()}')";
+            var sql = $@"
+        SELECT 
+            p.city,
+            p.district,
+            AVG(p.latitude) as lat,
+            AVG(p.longitude) as lng,
+            MAX(r.risk_category) as risk_category,
+            MAX(r.composite_risk_score) as risk_score,
+            COUNT(*) as listing_count,
+            AVG(p.asking_price_try) as avg_sale_price,
+            AVG(CAST(p.price_per_sqm_try AS double precision)) as avg_price_per_m2
+        FROM property_listings p
+        LEFT JOIN district_risks r 
+            ON unaccent(lower(p.district)) = unaccent(lower(r.district))
+        WHERE p.district IS NOT NULL
+          AND p.latitude BETWEEN 35 AND 43
+          AND p.longitude BETWEEN 25 AND 45
+          {cityFilter}
+        GROUP BY p.city, p.district
+        ORDER BY p.city, p.district";
 
             var rawData = await _context.Database
                 .SqlQueryRaw<DistrictSummaryRaw>(sql)
                 .ToListAsync();
 
-            return rawData
-                .GroupBy(x => new { x.City, x.District })
-                .Select(g => new DistrictMapDto
-                {
-                    City = g.Key.City,
-                    District = g.Key.District,
-                    Lat = g.First().Latitude ?? 39.0,
-                    Lng = g.First().Longitude ?? 35.0,
-                    RiskScore = g.First().RiskScore,
-                    RiskCategory = g.First().RiskCategory ?? "Bilinmiyor",
-                    ListingCount = g.Count(),
-                    AvgSalePrice = Math.Round((decimal)(g.Average(x => x.AskingPriceTry) ?? 0), 2),
-                    AvgPricePerM2 = g.Any(x => !string.IsNullOrWhiteSpace(x.PricePerSqmTry))
-                        ? Math.Round((decimal)g.Where(x => !string.IsNullOrWhiteSpace(x.PricePerSqmTry))
-                            .Average(x => ParsePrice(x.PricePerSqmTry)), 2)
-                        : 0
-                });
+            return rawData.Select(g => new DistrictMapDto
+            {
+                City = g.City,
+                District = g.District,
+                Lat = g.Latitude ?? 39.0,
+                Lng = g.Longitude ?? 35.0,
+                RiskScore = g.RiskScore,
+                RiskCategory = g.RiskCategory ?? "Bilinmiyor",
+                ListingCount = (int)(g.ListingCount ?? 0),
+                AvgSalePrice = Math.Round((decimal)(g.AvgSalePrice ?? 0), 2),
+                AvgPricePerM2 = Math.Round((decimal)(g.AvgPricePerM2 ?? 0), 2)
+            });
         }
 
         public async Task<IEnumerable<ProvinceMapDto>> GetProvincesAsync(string scenarioId)
@@ -128,4 +133,3 @@ public class MapService
             return 0;
         }
     }
-}

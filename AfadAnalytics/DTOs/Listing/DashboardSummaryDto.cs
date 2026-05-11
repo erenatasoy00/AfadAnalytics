@@ -1,4 +1,4 @@
-﻿namespace AfadAnalytics.DTOs
+﻿namespace AfadAnalytics.DTOs.Listing
 {
     public class DashboardSummaryDto
     {

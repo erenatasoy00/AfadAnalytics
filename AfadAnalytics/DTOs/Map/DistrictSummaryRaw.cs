@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AfadAnalytics.DTOs
+namespace AfadAnalytics.DTOs.Map
 {
     public class DistrictSummaryRaw
     {
@@ -10,22 +10,25 @@ namespace AfadAnalytics.DTOs
         [Column("district")]
         public string? District { get; set; }
 
-        [Column("latitude")]
+        [Column("lat")]
         public double? Latitude { get; set; }
 
-        [Column("longitude")]
+        [Column("lng")]
         public double? Longitude { get; set; }
 
-        [Column("asking_price_try")]
-        public double? AskingPriceTry { get; set; }
+        [Column("avg_sale_price")]
+        public double? AvgSalePrice { get; set; }
 
-        [Column("price_per_sqm_try")]
-        public string? PricePerSqmTry { get; set; }
+        [Column("avg_price_per_m2")]
+        public double? AvgPricePerM2 { get; set; }
 
         [Column("risk_category")]
         public string? RiskCategory { get; set; }
 
         [Column("risk_score")]
         public string? RiskScore { get; set; }
+
+        [Column("listing_count")]
+        public long? ListingCount { get; set; }
     }
 }
